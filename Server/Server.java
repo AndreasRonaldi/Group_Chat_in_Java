@@ -5,8 +5,8 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+// import java.util.logging.Level;
+// import java.util.logging.Logger;
 
 public class Server {
     static final int PORT = 4444; // port buat mulai server
@@ -17,7 +17,7 @@ public class Server {
     static Thread t0;
     static ServerNewCon serverNewCon = null;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // Create Server Thread then run it
         System.out.println("### Starting Server ###");
         serverNewCon = new ServerNewCon(); // server for accepting new connections
@@ -28,7 +28,8 @@ public class Server {
         try {
             listedForInput();
         } catch (Exception ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("ERROR: Something's wrong when listing to server input");
+            // Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -46,15 +47,25 @@ public class Server {
 
     public static void listedForInput() throws Exception {
         Scanner sc = new Scanner(System.in);
+        boolean shouldRun = true;
 
-        while (true) {
+        while (shouldRun) {
             while (!sc.hasNextLine()) {
                 Thread.sleep(1);
             }
             String input = sc.nextLine();
 
-            if (input.equalsIgnoreCase("exit")) {
-                break;
+            // Handle Server Input
+            switch (input.toUpperCase()) {
+                case "EXIT":
+                    System.out.println("# Stopping Server");
+                    shouldRun = false;
+                    break;
+                case "PING":
+                    System.out.println("PONG");
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -64,14 +75,13 @@ public class Server {
 
     public static void shutDownServer() throws Exception {
         // Send to all client to disconnect :)
-        serverNewCon.stopServer();
-
         for (User user : users) {
             user.stopUser();
         }
 
         users.clear();
+        serverNewCon.stopServer();
 
-        System.out.println("### Server Closed ###");
+        System.out.println("### Server Stopped ###");
     }
 }

@@ -14,13 +14,18 @@ public class ServerNewCon implements Runnable {
         try {
             serverSocket = new ServerSocket(Server.PORT);
             Socket newUserSocket = null;
+            
+            System.out.println("# Server Now Ready to take new connection");
+
             while (shouldRun) {
                 newUserSocket = serverSocket.accept();
                 System.out.println("# Someone join the server.");
                 Server.addUser(newUserSocket);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (shouldRun)
+                System.out.println("ERROR: Something wrong went accept new connection to server");
+            // e.printStackTrace();
         }
     }
 

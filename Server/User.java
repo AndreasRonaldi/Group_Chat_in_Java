@@ -1,14 +1,14 @@
 package Server;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
+// import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+// import java.util.logging.Level;
+// import java.util.logging.Logger;
 
 public class User extends Thread {
 
@@ -41,7 +41,8 @@ public class User extends Thread {
                 try {
                     Server.removeUser(this);
                 } catch (Exception e1) {
-                    Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, e1);
+                    System.out.println("ERROR: Something wrong when deleting user");
+                    // Logger.getLogger(User.class.getName()).log(Level.SEVERE, null, e1);
                 }
             }
         }

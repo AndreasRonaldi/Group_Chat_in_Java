@@ -1,17 +1,19 @@
 package Client.GUI;
 
+import static javax.swing.JOptionPane.showMessageDialog;
+import javax.swing.*;
+
 import Client.Client;
 import Client.ClientServer;
-import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
-import static javax.swing.JOptionPane.showMessageDialog;
 
-public class Login extends JFrame {
+public class Signup extends javax.swing.JFrame {
 
         // Variables declaration - do not modify
-        private javax.swing.JButton loginBtn;
         private javax.swing.JButton signupBtn;
+        private javax.swing.JButton loginBtn;
         private javax.swing.JLabel title;
         private javax.swing.JLabel usernameLabel;
         private javax.swing.JLabel passwordLabel;
@@ -21,7 +23,7 @@ public class Login extends JFrame {
         private javax.swing.JTextField usernameField;
         // End of variables declaration
 
-        public Login() {
+        public Signup() {
                 initComponents();
         }
 
@@ -39,8 +41,8 @@ public class Login extends JFrame {
                 usernameField = new javax.swing.JTextField();
                 passwordLabel = new javax.swing.JLabel();
                 passwordField = new javax.swing.JPasswordField();
-                loginBtn = new javax.swing.JButton();
                 signupBtn = new javax.swing.JButton();
+                loginBtn = new javax.swing.JButton();
 
                 javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
                 jPanel1.setLayout(jPanel1Layout);
@@ -58,7 +60,7 @@ public class Login extends JFrame {
                 background.setPreferredSize(new java.awt.Dimension(500, 500));
 
                 title.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
-                title.setText("LOGIN");
+                title.setText("Sign Up");
                 title.setToolTipText("");
 
                 usernameLabel.setLabelFor(usernameField);
@@ -67,17 +69,17 @@ public class Login extends JFrame {
                 passwordLabel.setLabelFor(passwordField);
                 passwordLabel.setText("Password");
 
-                loginBtn.setText("Login");
-                loginBtn.addActionListener(new java.awt.event.ActionListener() {
+                signupBtn.setText("Sign Up");
+                signupBtn.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                handleLogin(evt);
+                                handleSignup(evt);
                         }
                 });
 
-                signupBtn.setText("Sign up");
-                signupBtn.addActionListener(new java.awt.event.ActionListener() {
+                loginBtn.setText("Login");
+                loginBtn.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
-                                handleChangePageSignup(evt);
+                                handleChangePageLogin(evt);
                         }
                 });
 
@@ -104,23 +106,20 @@ public class Login extends JFrame {
                                                                                                 false)
                                                                                 .addGroup(jPanel2Layout
                                                                                                 .createSequentialGroup()
-                                                                                                .addComponent(loginBtn,
+                                                                                                .addComponent(signupBtn,
                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                 100,
                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                                                 .addPreferredGap(
                                                                                                                 javax.swing.LayoutStyle.ComponentPlacement.RELATED,
-                                                                                                                javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                                                                                43,
                                                                                                                 Short.MAX_VALUE)
-                                                                                                .addComponent(signupBtn,
+                                                                                                .addComponent(loginBtn,
                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE,
                                                                                                                 100,
                                                                                                                 javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                                                .addComponent(usernameField)
-                                                                                .addComponent(passwordField,
-                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE,
-                                                                                                243,
-                                                                                                javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                                .addComponent(passwordField)
+                                                                                .addComponent(usernameField))
                                                                 .addGap(86, 86, 86)));
                 jPanel2Layout.setVerticalGroup(
                                 jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -149,8 +148,8 @@ public class Login extends JFrame {
                                                                 .addGap(29, 29, 29)
                                                                 .addGroup(jPanel2Layout.createParallelGroup(
                                                                                 javax.swing.GroupLayout.Alignment.BASELINE)
-                                                                                .addComponent(loginBtn)
-                                                                                .addComponent(signupBtn))
+                                                                                .addComponent(signupBtn)
+                                                                                .addComponent(loginBtn))
                                                                 .addContainerGap(45, Short.MAX_VALUE)));
 
                 javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -167,30 +166,26 @@ public class Login extends JFrame {
                 pack();
         }
 
-        private void handleLogin(java.awt.event.ActionEvent evt) {
+        private void handleSignup(java.awt.event.ActionEvent evt) {
                 String inputUsername = usernameField.getText();
                 String inputPassword = String.valueOf(passwordField.getPassword());
 
-                Boolean output = ClientServer.handleLogin(inputUsername, inputPassword);
-
+                Boolean output = ClientServer.handleSignup(inputUsername, inputPassword);
                 if (output) {
                         Client.openDashboard();
                         this.dispose();
-                        return;
                 } else {
-                        showMessageDialog(null, "Wrong username/password");
+                        showMessageDialog(null, "Username Taken!");
                         return;
                 }
-
         }
 
-        private void handleChangePageSignup(java.awt.event.ActionEvent evt) {
-                Signup form = new Signup();
+        private void handleChangePageLogin(java.awt.event.ActionEvent evt) {
+                Login form = new Login();
                 form.setVisible(true);
                 form.pack();
                 form.setLocationRelativeTo(null);
 
                 this.dispose();
         }
-
 }

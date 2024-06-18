@@ -9,10 +9,10 @@ public class Group {
     private User owner = null;
     private ArrayList<ServerUser> users = null;
 
-    public Group(String name, User user) {
+    public Group(String name, User user, Integer hash) {
         users = new ArrayList<>();
         this.name = name;
-        this.hash = name.hashCode();
+        this.hash = hash;
         this.owner = user;
     }
 

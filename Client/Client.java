@@ -10,8 +10,10 @@ public class Client {
 
     static ClientServer server = null;
     static Dashboard dashboard = null;
+    static Chat chat = null;
 
     public static void main(String[] args) {
+        chat = new Chat();
         dashboard = new Dashboard();
 
         System.out.println("### Starting Client ###");
@@ -26,10 +28,27 @@ public class Client {
     }
 
     public static void openDashboard() {
-        System.out.println("open dashboard");
+        System.out.println("> Open dashboard");
         dashboard.setVisible(true);
         dashboard.pack();
         dashboard.setLocationRelativeTo(null);
+        dashboard.handleRefresh(null);
+        dashboard.jLabel3.setText(ClientServer.name);
+    }
+
+    public static void closeDashboard() {
+        dashboard.setVisible(false);
+    }
+
+    public static void openChat() {
+        System.out.println("> Open chat");
+        chat.setVisible(true);
+        chat.pack();
+        chat.setLocationRelativeTo(null);
+    }
+
+    public static void closeChat() {
+        chat.setVisible(false);
     }
 
     public static void listedForInput() throws Exception {

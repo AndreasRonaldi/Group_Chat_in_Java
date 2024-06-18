@@ -11,6 +11,10 @@ public class ClientServer implements Runnable {
 
     static String output = null;
     static IncomingReader reader = null;
+    static Thread tReader = null;
+
+    static String name = "???";
+    static Integer idGroup;
 
     @Override
     public void run() {
@@ -40,15 +44,61 @@ public class ClientServer implements Runnable {
     public static Boolean handleLogin(String username, String password) {
         Boolean res = Boolean.parseBoolean(InputOutput("/login " + username + " " + password));
         if (res)
-            new Thread(reader).start();
+            name = username;
         return res;
     }
 
     public static Boolean handleSignup(String username, String password) {
         Boolean res = Boolean.parseBoolean(InputOutput("/signup " + username + " " + password));
         if (res)
-            new Thread(reader).start();
+            name = username;
         return res;
+    }
+
+    public static Boolean handleCreateRoom(String name) {
+        Boolean res = Boolean.parseBoolean(InputOutput("/addgroup " + name));
+        Client.dashboard.handleRefresh(null);
+        return res;
+    }
+
+    public static Boolean handleRemoveRoom(Integer id) {
+        Boolean res = Boolean.parseBoolean(InputOutput("/removegroup " + id));
+        Client.dashboard.handleRefresh(null);
+        return res;
+    }
+
+    public static String handleGetGroupList() {
+        String res = InputOutput("/listgroup");
+        return res;
+    }
+
+    public static Boolean handleJoinGroup(Integer id) {
+        if (idGroup != null)
+            return false;
+        idGroup = id;
+        Boolean res = Boolean.parseBoolean(InputOutput("/joingroup " + id));
+        startReader();
+        return res;
+    }
+
+    public static void handleExitGroup() {
+        idGroup = null;
+        stopReader();
+        InputOutput("/exitgroup");
+    }
+
+    public static void startReader() {
+        if (tReader == null || tReader.isInterrupted()) {
+            System.out.println("> Start Incoming Reader");
+            tReader = new Thread(reader);
+            tReader.start();
+        }
+    }
+
+    public static void stopReader() {
+        System.out.println("> Stop Incoming Reader");
+        // reader.shouldRun = false;
+        tReader.interrupt();
     }
 
     private static String InputOutput(String input) {
@@ -80,7 +130,8 @@ public class ClientServer implements Runnable {
             try {
                 String message;
                 while ((message = is.readLine()) != null) {
-                    Client.dashboard.displayMessage(message);
+                    // System.out.println(message);
+                    Client.chat.displayMessage(message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

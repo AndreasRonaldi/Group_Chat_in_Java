@@ -2,6 +2,8 @@ package Server;
 
 import java.io.*;
 import java.net.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -142,8 +144,13 @@ public class Server {
 
         if (b)
             return false;
-        Group newGroup = new Group(name, user);
-        groups.put(name.hashCode(), newGroup);
+
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+
+        Integer hashCode = (name + dateFormat.format(date) + user.username).hashCode();
+        Group newGroup = new Group(name, user, hashCode);
+        groups.put(hashCode, newGroup);
         return true;
     }
 

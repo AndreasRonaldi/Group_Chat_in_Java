@@ -2,14 +2,10 @@ package Server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-// import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.*;
 
 public class ServerUser extends Thread {
 
@@ -106,20 +102,13 @@ public class ServerUser extends Thread {
                 if (needLoggedIn())
                     break;
                 output = Server.createGroup(inputs[1], user);
-                if ((Boolean) output)
-                    sendMsg("Group Created");
-                else
-                    sendMsg("Name Cannot Contained Special Character");
+                sendMsg("" + output);
                 break;
             case "/removegroup":
                 if (needLoggedIn())
                     break;
                 output = Server.removeGroup(Integer.valueOf(inputs[1]), user);
-                if (!(Boolean) output) { // not owner
-                    sendMsg("Can't be Removed");
-                    break;
-                }
-                sendMsg("Group Removed");
+                sendMsg("" + output);
                 break;
             case "/listgroup":
                 if (needLoggedIn())
@@ -131,12 +120,19 @@ public class ServerUser extends Thread {
                 if (needLoggedIn())
                     break;
                 output = Server.addUserToGroup(this, Integer.valueOf(inputs[1]));
-                if (!(Boolean) output) { // not owner
-                    sendMsg("There's no group with that id");
+                if (!(Boolean) output) { // group not found
+                    sendMsg("" + output);
                     break;
                 }
-                // sendMsg("User Join");
-                group.sendMsgToAll(user.username + " has join.");
+                sendMsg("" + output);
+                group.sendMsgToAll(user.username + " has join room.");
+                break;
+            case "/exitgroup":
+                if (needLoggedIn())
+                    break;
+                group.sendMsgToAll(user.username + " exit room.");
+                group = null;
+                sendMsg("" + true);
                 break;
             case "/chat":
                 if (group == null) {
@@ -161,6 +157,7 @@ public class ServerUser extends Thread {
                     sendMsg("You need to be in a group to chat");
                     break;
                 }
+                System.out.println("Sending msg to all in group");
                 group.sendMsgToAll(user.username + ": " + input);
                 break;
         }

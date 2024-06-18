@@ -1,9 +1,12 @@
 package Server;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 // import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.*;
@@ -15,24 +18,38 @@ public class ServerUser extends Thread {
 
     private Socket socket;
     private BufferedReader is = null;
-    private PrintWriter os = null;
+    // private PrintWriter pw = null;
+    private BufferedWriter bw = null;
     private volatile boolean shouldRun = true;
 
     public ServerUser(final Socket userSocket) {
         try {
             this.socket = userSocket;
             is = new BufferedReader(new InputStreamReader(userSocket.getInputStream()));
-            os = new PrintWriter(socket.getOutputStream(), true);
+            // pw = new PrintWriter(socket.getOutputStream(), true);
+            bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         } catch (IOException e) {
         }
     }
 
     public void stopUser() throws IOException {
         shouldRun = false;
-        Server.logout(this);
         is.close();
-        os.close();
+        // pw.close();
+        bw.close();
         socket.close();
+    }
+
+    public boolean isLoggedIn() {
+        return user != null;
+    }
+
+    private Boolean needLoggedIn() {
+        if (!isLoggedIn()) {
+            sendMsg("You do not have access");
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -40,12 +57,16 @@ public class ServerUser extends Thread {
         while (shouldRun) {
             try {
                 String line = is.readLine();
-                if (user != null)
-                    System.out.println("> Input [" + this.user.username + "]: " + line);
-                else
-                    System.out.println("> Input [new]: " + line);
-                // handle Input
-                handleInput(line);
+                if (line.equals("null") || line.trim().equals("")) {
+                    sendMsg("");
+                } else {
+                    if (user != null)
+                        System.out.println("> Input [" + this.user.username + "]: " + line);
+                    else
+                        System.out.println("> Input [new]: " + line);
+                    // handle Input
+                    handleInput(line);
+                }
             } catch (IOException e) {
                 if (user != null)
                     System.out.println("> Disconnected: " + this.user.username);
@@ -65,37 +86,99 @@ public class ServerUser extends Thread {
         String inputs[] = input.split(" ", 3);
         String action = inputs[0];
 
-        boolean bolOutput = false;
+        Object output = false;
+        Object[] arrOutput = null;
 
         // System.out.println(Arrays.toString(inputs));
 
         switch (action) {
             case "/signup":
-                bolOutput = Server.addNewUser(inputs[1], inputs[2]);
-                if (!bolOutput) { // username taken
-                    sendMsg("" + bolOutput);
+                output = Server.addNewUser(inputs[1], inputs[2]);
+                if (!(Boolean) output) { // username taken
+                    sendMsg("" + output);
                     break;
                 }
             case "/login":
-                bolOutput = Server.login(inputs[1], inputs[2], this);
-                sendMsg("" + bolOutput);
+                output = Server.login(inputs[1], inputs[2], this);
+                sendMsg("" + output);
+                break;
+            case "/addgroup":
+                if (needLoggedIn())
+                    break;
+                output = Server.createGroup(inputs[1], user);
+                if ((Boolean) output)
+                    sendMsg("Group Created");
+                else
+                    sendMsg("Name Cannot Contained Special Character");
+                break;
+            case "/removegroup":
+                if (needLoggedIn())
+                    break;
+                output = Server.removeGroup(Integer.valueOf(inputs[1]), user);
+                if (!(Boolean) output) { // not owner
+                    sendMsg("Can't be Removed");
+                    break;
+                }
+                sendMsg("Group Removed");
+                break;
+            case "/listgroup":
+                if (needLoggedIn())
+                    break;
+                output = Server.listOfGroup();
+                sendMsg("" + output);
+                break;
+            case "/joingroup":
+                if (needLoggedIn())
+                    break;
+                output = Server.addUserToGroup(this, Integer.valueOf(inputs[1]));
+                if (!(Boolean) output) { // not owner
+                    sendMsg("There's no group with that id");
+                    break;
+                }
+                // sendMsg("User Join");
+                group.sendMsgToAll(user.username + " has join.");
+                break;
+            case "/chat":
+                if (group == null) {
+                    sendMsg("You need to be in a group to chat");
+                    break;
+                }
+                String temp[] = input.split(" ", 1);
+                group.sendMsgToAll(user.username + ": " + temp[1]);
                 break;
             case "/logout":
-                Server.logout(this);
-                sendMsg("Done");
-                this.stopUser();
-                break;
             case "/exit":
+                sendMsg("exitting...");
                 Server.removeUserConnection(this);
                 break;
+            // case null:
             default:
-                sendMsg("This is your Messages: " + input);
+                if (user == null) {
+                    sendMsg("You do not have access");
+                    break;
+                }
+                if (group == null) {
+                    sendMsg("You need to be in a group to chat");
+                    break;
+                }
+                group.sendMsgToAll(user.username + ": " + input);
                 break;
         }
     }
 
+    public void sendArray(Object[] arr) {
+        // os.
+    }
+
     public void sendMsg(String msg) {
-        os.println(msg);
+        // pw.println(msg);
+        try {
+            bw.write(msg);
+            bw.newLine();
+            bw.flush();
+        } catch (IOException e) {
+            System.out.println("ERROR: Sending to " + user.username);
+        }
     }
 
     public void setGroup(Group group) {

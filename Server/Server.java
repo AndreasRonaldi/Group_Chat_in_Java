@@ -3,6 +3,8 @@ package Server;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // import java.util.logging.Level;
 // import java.util.logging.Logger;
@@ -14,8 +16,8 @@ public class Server {
     private static Set<String> usernames = new HashSet<>();
     private static Set<User> users = new HashSet<>();
     private static Set<ServerUser> activeUser = new HashSet<>();
-    public static ArrayList<ServerUser> allUsersCon = new ArrayList<>();
-    public static ArrayList<Group> groups = new ArrayList<>();
+    private static ArrayList<ServerUser> allUsersCon = new ArrayList<>();
+    private static HashMap<Integer, Group> groups = new HashMap<>();
 
     static ServerNewCon serverNewCon = null;
 
@@ -44,6 +46,7 @@ public class Server {
         if (userCon.user != null)
             System.out.println("> Removed User " + userCon.user.username);
         userCon.stopUser();
+        activeUser.remove(userCon);
         allUsersCon.remove(userCon);
     }
 
@@ -52,9 +55,9 @@ public class Server {
         boolean shouldRun = true;
 
         while (shouldRun) {
-            while (!sc.hasNextLine()) {
+            while (!sc.hasNextLine())
                 Thread.sleep(1);
-            }
+
             String input = sc.nextLine();
 
             // Handle Server Input
@@ -71,11 +74,16 @@ public class Server {
                     break;
                 case "LIST ACTIVE USER":
                     for (ServerUser Su : activeUser)
-                        System.out.print(Su.user.username + ", ");
-                    System.out.println();
+                        System.out.println(" " +
+                                Su.user.username + "[" + (Su.group != null ? Su.group.name : "...") + "]");
+                    break;
+                case "LIST GROUP":
+                    System.out.println("In Dev");
                     break;
                 case "SENDALL":
                     System.out.print("Message?: ");
+                    while (!sc.hasNextLine())
+                        Thread.sleep(1);
                     input = sc.nextLine();
                     for (ServerUser Su : activeUser)
                         Su.sendMsg("#SERVER#" + input);
@@ -127,25 +135,39 @@ public class Server {
         return false;
     }
 
-    public static void logout(ServerUser user) {
-        activeUser.remove(user);
+    public static Boolean createGroup(String name, User user) {
+        Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+        Matcher m = p.matcher(name);
+        boolean b = m.find();
+
+        if (b)
+            return false;
+        Group newGroup = new Group(name, user);
+        groups.put(name.hashCode(), newGroup);
+        return true;
     }
 
-    public static void createGroup(String name) {
-        Group newGroup = new Group(name);
-        groups.add(newGroup);
+    public static Boolean removeGroup(Integer groupHash, User user) {
+        Group group = groups.get(groupHash);
+        if (group.getOwnerName() == user.username) {
+            group.closeGroup();
+            groups.remove(groupHash);
+            return true;
+        }
+        return false;
     }
 
-    public static void removeGroup() {
+    public static String listOfGroup() {
+        return groups.toString();
     }
 
-    public static void listOfGroup() {
-
-    }
-
-    public static void addUserToGroup(ServerUser user, Group group) {
+    public static Boolean addUserToGroup(ServerUser user, Integer groupHash) {
+        Group group = groups.get(groupHash);
+        if (group == null)
+            return false;
         user.setGroup(group);
         group.addUserCon(user);
+        return true;
     }
 
     public static void removeUserFromGroup(ServerUser user) {

@@ -133,8 +133,15 @@ public class ServerUser extends Thread {
                 if (needLoggedIn())
                     break;
                 group.sendMsgToAll(user.username + " exit room.");
+                group.removeUserCon(this);
                 group = null;
                 sendMsg("" + true);
+                break;
+            case "/listofuser":
+                if (needLoggedIn())
+                    break;
+                if (group == null)
+                    break;
                 break;
             case "/chat":
                 if (group == null) {
@@ -159,7 +166,6 @@ public class ServerUser extends Thread {
                     sendMsg("You need to be in a group to chat");
                     break;
                 }
-                System.out.println("Sending msg to all in group");
                 group.sendMsgToAll(user.username + ": " + input);
                 break;
         }

@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ServerNewCon implements Runnable {
-
     ServerSocket serverSocket = null;
     private volatile boolean shouldRun = true;
 

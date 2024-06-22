@@ -24,6 +24,10 @@ public class Group {
         users.add(u);
     }
 
+    public String getListOfUsers() {
+        return users.toString();
+    }
+
     public void removeUserCon(ServerUser u) {
         users.remove(u);
     }

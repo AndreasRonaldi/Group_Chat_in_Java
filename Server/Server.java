@@ -80,7 +80,12 @@ public class Server {
                                 Su.user.username + "[" + (Su.group != null ? Su.group.name : "...") + "]");
                     break;
                 case "LIST GROUP":
-                    System.out.println("In Dev");
+                    System.out.println("[");
+                    for (Integer key : groups.keySet()) {
+                        Group g = groups.get(key);
+                        System.out.println("" + key + ": " + g.name + " " + g.getListOfUsers());
+                    }
+                    System.out.println("]");
                     break;
                 case "SENDALL":
                     System.out.print("Message?: ");
@@ -162,6 +167,10 @@ public class Server {
             return true;
         }
         return false;
+    }
+
+    public static String listOfUserInGroup(Group group) {
+        return group.getListOfUsers();
     }
 
     public static String listOfGroup() {

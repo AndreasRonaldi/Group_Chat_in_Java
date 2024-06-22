@@ -10,6 +10,11 @@ public class User {
     }
 
     @Override
+    public String toString() {
+        return username;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == this)
             return true;

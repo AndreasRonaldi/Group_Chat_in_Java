@@ -39,9 +39,11 @@ public class Group {
     }
 
     public void closeGroup() {
-        for (ServerUser user : users) {
-            Server.removeUserFromGroup(user);
-        }
+        sendMsgToAll("/exitgroup remove");
+        users.removeAll(users);
+        // for (ServerUser user : users) {
+        // Server.removeUserFromGroup(user);
+        // }
     }
 
     @Override

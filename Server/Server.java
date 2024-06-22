@@ -107,6 +107,10 @@ public class Server {
     private static void shutDownServer() throws Exception {
         // Send to all client to disconnect :)
         for (ServerUser user : allUsersCon) {
+            user.sendMsg("/exit");
+        }
+
+        for (ServerUser user : allUsersCon) {
             user.stopUser();
         }
 

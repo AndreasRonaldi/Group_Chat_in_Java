@@ -3,6 +3,11 @@ package Client;
 import java.io.*;
 import java.net.*;
 
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
+import static javax.swing.JOptionPane.showMessageDialog;
+
 public class ClientServer implements Runnable {
 
     static Socket clientSocket = null;
@@ -14,7 +19,7 @@ public class ClientServer implements Runnable {
     static Thread tReader = null;
 
     static String name = "???";
-    static Integer idGroup;
+    static Group group = null;
 
     @Override
     public void run() {
@@ -30,61 +35,54 @@ public class ClientServer implements Runnable {
         }
 
         reader = new IncomingReader();
+        startReader();
     }
 
     public static void handleSendMsg(String input) {
-        try {
-            System.out.println("> Send: " + input);
-            os.writeBytes(input + "\n");
-        } catch (IOException ex) {
-            System.out.println("ERROR: writing to server.");
-        }
+        InputToServer("/chat " + input);
     }
 
-    public static Boolean handleLogin(String username, String password) {
-        Boolean res = Boolean.parseBoolean(InputOutput("/login " + username + " " + password));
-        if (res)
-            name = username;
-        return res;
+    public static void handleLogin(String username, String password) {
+        InputToServer("/login " + username + " " + password);
+        ClientServer.name = username;
     }
 
-    public static Boolean handleSignup(String username, String password) {
-        Boolean res = Boolean.parseBoolean(InputOutput("/signup " + username + " " + password));
-        if (res)
-            name = username;
-        return res;
+    public static void handleSignup(String username, String password) {
+        InputToServer("/signup " + username + " " + password);
+        ClientServer.name = username;
     }
 
-    public static Boolean handleCreateRoom(String name) {
-        Boolean res = Boolean.parseBoolean(InputOutput("/addgroup " + name));
-        Client.dashboard.handleRefresh(null);
-        return res;
+    public static void handleCreateRoom(String name) {
+        InputToServer("/addgroup " + name);
     }
 
-    public static Boolean handleRemoveRoom(Integer id) {
-        Boolean res = Boolean.parseBoolean(InputOutput("/removegroup " + id));
-        Client.dashboard.handleRefresh(null);
-        return res;
+    public static void handleRemoveRoom() {
+        InputToServer("/removegroup " + group.id);
     }
 
-    public static String handleGetGroupList() {
-        String res = InputOutput("/listgroup");
-        return res;
+    public static void handleGetGroupList() {
+        InputToServer("/listgroup");
     }
 
-    public static Boolean handleJoinGroup(Integer id) {
-        if (idGroup != null)
-            return false;
-        idGroup = id;
-        Boolean res = Boolean.parseBoolean(InputOutput("/joingroup " + id));
-        startReader();
-        return res;
+    public static void handleJoinGroup(Group joinGroup) {
+        if (joinGroup != null)
+            group = joinGroup;
+
+        InputToServer("/joingroup " + group.id);
     }
 
     public static void handleExitGroup() {
-        idGroup = null;
-        stopReader();
-        InputOutput("/exitgroup");
+        group = null;
+        InputToServer("/exitgroup");
+    }
+
+    public static void handleOpenMember() {
+        if (group.ownerUsername.equals(name)) {
+            Client.openDetailOwner();
+        } else {
+            Client.openDetailMember();
+        }
+        InputToServer("/listuseringroup");
     }
 
     public static void startReader() {
@@ -101,7 +99,7 @@ public class ClientServer implements Runnable {
         tReader.interrupt();
     }
 
-    private static String InputOutput(String input) {
+    private static void InputToServer(String input) {
         try {
             System.out.println("> Send: " + input);
             os.writeBytes(input + "\n");
@@ -109,15 +107,15 @@ public class ClientServer implements Runnable {
             System.out.println("ERROR: writing to server.");
         }
 
-        try {
-            output = is.readLine();
-            System.out.println("> Read: " + output);
-            return output;
-        } catch (IOException e) {
-            System.out.println("ERROR: reading server intention.");
-        }
+        // try {
+        // output = is.readLine();
+        // System.out.println("> Read: " + output);
+        // return output;
+        // } catch (IOException e) {
+        // System.out.println("ERROR: reading server intention.");
+        // }
 
-        return "";
+        // return "";
     }
 
     public void stopServer() throws IOException {
@@ -132,12 +130,117 @@ public class ClientServer implements Runnable {
             try {
                 String message;
                 while ((message = is.readLine()) != null && shouldRun) {
-                    System.out.println("msg: " + message);
-                    Client.chat.displayMessage(message);
+                    System.out.println("> Read: " + message);
+                    handleInputFromServer(message);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static void createWarningMsg(String msg) {
+        JOptionPane opt = new JOptionPane(msg, JOptionPane.WARNING_MESSAGE,
+                JOptionPane.DEFAULT_OPTION, null, new Object[] {}); // no buttons
+        final JDialog dlg = opt.createDialog("Error");
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    Thread.sleep(10000);
+                    dlg.dispose();
+
+                } catch (Throwable th) {
+
+                }
+            }
+        }).start();
+        dlg.setVisible(true);
+    }
+
+    public static void handleInputFromServer(String input) {
+        String inputs[] = input.split(" ", 2);
+        String action = inputs[0];
+
+        Object res;
+        Object[] arrRes;
+
+        Boolean bolres;
+
+        switch (action) {
+            case "/login":
+                res = inputs[1];
+                if (Boolean.valueOf("" + res)) // login success
+                {
+                    Client.closeLogin();
+                    Client.closeSignup();
+                    Client.openDashboard();
+                } else
+                    showMessageDialog(null, "Wrong Username/Password");
+                break;
+            case "/signup":
+                res = inputs[1];
+                if (!Boolean.valueOf("" + res)) // signup unsuccessful
+                    showMessageDialog(null, "Username is taken");
+                break;
+            case "/addgroup":
+                res = inputs[1];
+                if (Boolean.valueOf("" + res)) {
+                    showMessageDialog(null, "Room created");
+                    handleGetGroupList();
+                } else {
+                    showMessageDialog(null, "Room can't contained special character");
+                    Client.dashboard.handleCreateGroup(null);
+                }
+                break;
+            case "/removegroup":
+                res = inputs[1];
+                if (!Boolean.valueOf("" + res)) {
+                    createWarningMsg("You are not the owner of the group");
+                }
+                break;
+            case "/kickuser":
+                // TODO:
+                break;
+            case "/listgroup":
+                Client.dashboard.handleChangeModelList(inputs[1]);
+                break;
+            case "/joingroup":
+                bolres = Boolean.valueOf("" + inputs[1]);
+                if (bolres) {
+                    Client.openChat();
+                    Client.closeDashboard();
+                } else {
+                    showMessageDialog(null, "Group chat is not found, Please Refresh List");
+                }
+                break;
+            case "/exitgroup":
+                res = inputs[1];
+                switch ("" + res) {
+                    case "kick":
+                        createWarningMsg("You have been kicked!");
+                        break;
+                    case "remove":
+                        createWarningMsg("The Group has been disband.");
+                        break;
+                    default:
+                        break;
+                }
+                Client.closeChat();
+                Client.openDashboard();
+                break;
+            case "/listuseringroup":
+                Client.detailMember(inputs[1]);
+                break;
+            case "/chat":
+                Client.chat.displayMessage(inputs[1]);
+                break;
+            case "/exit":
+                createWarningMsg("Server is Closing...");
+                Client.shutDownClient();
+                break;
+            default:
+                System.out.println("> ERROR: Something is send? [" + input + "]");
+                break;
         }
     }
 }

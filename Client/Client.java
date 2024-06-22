@@ -1,5 +1,6 @@
 package Client;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 import Client.GUI.*;
@@ -10,7 +11,11 @@ public class Client {
 
     static ClientServer server = null;
     static Dashboard dashboard = null;
+    static Login login = null;
+    static Signup signup = null;
     static Chat chat = null;
+    static DetailMember dMember = null;
+    static DetailOwner dOwner = null;
 
     public static void main(String[] args) {
         chat = new Chat();
@@ -21,10 +26,15 @@ public class Client {
         new Thread(server).start();
 
         System.out.println("> Open Login Form");
-        Login form = new Login();
-        form.setVisible(true); // make form visible to the user
-        form.pack();
-        form.setLocationRelativeTo(null);
+        openLogin();
+
+        // Get input in server
+        try {
+            listedForInput();
+        } catch (Exception ex) {
+            System.out.println("ERROR: Something's wrong when listing to server input");
+            // Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public static void openDashboard() {
@@ -46,10 +56,71 @@ public class Client {
         chat.setVisible(true);
         chat.pack();
         chat.setLocationRelativeTo(null);
+        if (ClientServer.group != null)
+            chat.jLabel1.setText(ClientServer.group.name);
     }
 
     public static void closeChat() {
         chat.setVisible(false);
+    }
+
+    public static void openLogin() {
+        if (login == null)
+            login = new Login();
+        login.setVisible(true); // make login visible to the user
+        login.pack();
+        login.setLocationRelativeTo(null);
+    }
+
+    public static void closeLogin() {
+        if (login != null)
+            login.dispose();
+    }
+
+    public static void openSignup() {
+        if (signup == null)
+            signup = new Signup();
+        signup.setVisible(true);
+        signup.pack();
+        signup.setLocationRelativeTo(null);
+    }
+
+    public static void closeSignup() {
+        if (signup != null)
+            signup.dispose();
+    }
+
+    public static void openDetailMember() {
+        if (dMember == null)
+            dMember = new DetailMember();
+        dMember.setVisible(true);
+        dMember.pack();
+        dMember.setLocationRelativeTo(null);
+    }
+
+    public static void closeDetailMember() {
+        dMember.dispose();
+        dMember = null;
+    }
+
+    public static void openDetailOwner() {
+        if (dOwner == null)
+            dOwner = new DetailOwner();
+        dOwner.setVisible(true);
+        dOwner.pack();
+        dOwner.setLocationRelativeTo(null);
+    }
+
+    public static void closeDetailOwner() {
+        dOwner.dispose();
+        dOwner = null;
+    }
+
+    public static void detailMember(String list) {
+        if (dMember != null)
+            dMember.handleChangeModelList(list);
+        else if (dOwner != null)
+            dOwner.handleChangeModelList(list);
     }
 
     public static void listedForInput() throws Exception {
@@ -65,7 +136,7 @@ public class Client {
             // Handle Server Input
             switch (input.toUpperCase()) {
                 case "EXIT":
-                    System.out.println("> Stopping Server");
+                    System.out.println("> Stopping Client");
                     shouldRun = false;
                     break;
                 case "PING":
@@ -80,9 +151,14 @@ public class Client {
         shutDownClient();
     }
 
-    public static void shutDownClient() throws Exception {
-        server.stopServer();
-
-        System.out.println("### Client Stopped ###");
+    public static void shutDownClient() {
+        try {
+            server.stopServer();
+        } catch (IOException e) {
+            System.out.println("ERROR: Closing Server Socket");
+        } finally {
+            System.out.println("### Client Stopped ###");
+            System.exit(0);
+        }
     }
 }

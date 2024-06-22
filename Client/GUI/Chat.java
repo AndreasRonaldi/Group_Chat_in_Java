@@ -11,7 +11,7 @@ public class Chat extends javax.swing.JFrame {
         private javax.swing.JButton jButton2;
         private javax.swing.JButton jButton3;
         private javax.swing.JButton jButton4;
-        private javax.swing.JLabel jLabel1;
+        public javax.swing.JLabel jLabel1;
         private javax.swing.JPanel jPanel1;
         private javax.swing.JPanel jPanel2;
         private javax.swing.JScrollPane jScrollPane1;
@@ -112,6 +112,11 @@ public class Chat extends javax.swing.JFrame {
                 jLabel1.setText("Group Name");
 
                 jButton3.setText("...");
+                jButton3.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                handleOpenMemberList(evt);
+                        }
+                });
 
                 jButton4.setText("<");
                 jButton4.addActionListener(new java.awt.event.ActionListener() {
@@ -185,8 +190,12 @@ public class Chat extends javax.swing.JFrame {
                 pack();
         }// </editor-fold>
 
+        private void handleOpenMemberList(java.awt.event.ActionEvent evt) {
+                ClientServer.handleOpenMember();
+        }
+
         private void handleSendFile(java.awt.event.ActionEvent evt) {
-                // TODO add your handling code here:
+
         }
 
         private void handleSendMessage(java.awt.event.ActionEvent evt) {
@@ -207,8 +216,6 @@ public class Chat extends javax.swing.JFrame {
 
         private void handleExitGroup(java.awt.event.ActionEvent evt) {
                 ClientServer.handleExitGroup();
-                Client.closeChat();
-                Client.openDashboard();
         }
 
         public void displayMessage(String msg) {

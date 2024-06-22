@@ -170,22 +170,11 @@ public class Signup extends javax.swing.JFrame {
                 String inputUsername = usernameField.getText();
                 String inputPassword = String.valueOf(passwordField.getPassword());
 
-                Boolean output = ClientServer.handleSignup(inputUsername, inputPassword);
-                if (output) {
-                        Client.openDashboard();
-                        this.dispose();
-                } else {
-                        showMessageDialog(null, "Username Taken!");
-                        return;
-                }
+                ClientServer.handleSignup(inputUsername, inputPassword);
         }
 
         private void handleChangePageLogin(java.awt.event.ActionEvent evt) {
-                Login form = new Login();
-                form.setVisible(true);
-                form.pack();
-                form.setLocationRelativeTo(null);
-
-                this.dispose();
+                Client.closeSignup();
+                Client.openLogin();
         }
 }

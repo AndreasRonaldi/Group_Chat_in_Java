@@ -93,67 +93,75 @@ public class ServerUser extends Thread {
             case "/signup":
                 output = Server.addNewUser(inputs[1], inputs[2]);
                 if (!(Boolean) output) { // username taken
-                    sendMsg("" + output);
+                    sendMsg("/signup " + output);
                     break;
                 }
             case "/login":
                 output = Server.login(inputs[1], inputs[2], this);
-                sendMsg("" + output);
+                sendMsg("/login " + output);
                 break;
+            // Reading all this without stop from client
             case "/addgroup":
                 if (needLoggedIn())
                     break;
                 output = Server.createGroup(inputs[1], user);
-                sendMsg("" + output);
+                sendMsg("/addgroup " + output);
                 break;
             case "/removegroup":
                 if (needLoggedIn())
                     break;
                 output = Server.removeGroup(Integer.valueOf(inputs[1]), user);
-                sendMsg("" + output);
+                sendMsg("/removegroup " + output);
                 break;
             case "/listgroup":
                 if (needLoggedIn())
                     break;
                 output = Server.listOfGroup();
-                sendMsg("" + output);
+                sendMsg("/listgroup " + output);
                 break;
             case "/joingroup":
                 if (needLoggedIn())
                     break;
                 output = Server.addUserToGroup(this, Integer.valueOf(inputs[1]));
                 if (!(Boolean) output) { // group not found
-                    sendMsg("" + output);
+                    sendMsg("/joingroup " + output);
                     break;
                 }
-                sendMsg("" + output);
-                group.sendMsgToAll(user.username + " has join room.");
+                sendMsg("/joingroup " + output);
+                group.sendMsgToAll("/chat " + user.username + " has join room.");
                 break;
             case "/exitgroup":
                 if (needLoggedIn())
                     break;
-                group.sendMsgToAll(user.username + " exit room.");
+                group.sendMsgToAll("/chat " + user.username + " exit room.");
                 group.removeUserCon(this);
                 group = null;
-                sendMsg("" + true);
+                sendMsg("/exitgroup exit");
                 break;
-            case "/listofuser":
+            case "/kick":
+                if (needLoggedIn())
+                    break;
+                // TODO:
+                // group.sendMsgToAll("/chat ");
+            case "/listuseringroup":
                 if (needLoggedIn())
                     break;
                 if (group == null)
                     break;
+                output = Server.listOfUserInGroup(group);
+                sendMsg("/listuseringroup " + output);
                 break;
             case "/chat":
                 if (group == null) {
-                    sendMsg("You need to be in a group to chat");
+                    sendMsg("false");
                     break;
                 }
-                String temp[] = input.split(" ", 1);
-                group.sendMsgToAll(user.username + ": " + temp[1]);
+                String temp[] = input.split(" ", 2);
+                group.sendMsgToAll("/chat " + user.username + ": " + temp[1]);
                 break;
             case "/logout":
             case "/exit":
-                sendMsg("exitting...");
+                sendMsg("/exit");
                 Server.removeUserConnection(this);
                 break;
             // case null:
@@ -166,7 +174,8 @@ public class ServerUser extends Thread {
                     sendMsg("You need to be in a group to chat");
                     break;
                 }
-                group.sendMsgToAll(user.username + ": " + input);
+                sendMsg("What....?");
+                // group.sendMsgToAll(user.username + ": " + input);
                 break;
         }
     }
@@ -192,5 +201,10 @@ public class ServerUser extends Thread {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return user.username;
     }
 }

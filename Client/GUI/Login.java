@@ -171,26 +171,12 @@ public class Login extends JFrame {
                 String inputUsername = usernameField.getText();
                 String inputPassword = String.valueOf(passwordField.getPassword());
 
-                Boolean output = ClientServer.handleLogin(inputUsername, inputPassword);
-
-                if (output) {
-                        Client.openDashboard();
-                        this.dispose();
-                        return;
-                } else {
-                        showMessageDialog(null, "Wrong username/password");
-                        return;
-                }
-
+                ClientServer.handleLogin(inputUsername, inputPassword);
         }
 
         private void handleChangePageSignup(java.awt.event.ActionEvent evt) {
-                Signup form = new Signup();
-                form.setVisible(true);
-                form.pack();
-                form.setLocationRelativeTo(null);
-
-                this.dispose();
+                Client.closeLogin();
+                Client.openSignup();
         }
 
 }

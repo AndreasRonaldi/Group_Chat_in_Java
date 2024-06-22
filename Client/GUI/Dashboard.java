@@ -17,6 +17,7 @@ public class Dashboard extends javax.swing.JFrame {
     // Variables declaration - do not modify
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel2;
     public javax.swing.JLabel jLabel3;
     private javax.swing.JList<Group> jList1;
@@ -36,6 +37,7 @@ public class Dashboard extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList<>();
         jButton1 = new javax.swing.JButton();
@@ -80,25 +82,36 @@ public class Dashboard extends javax.swing.JFrame {
             }
         });
 
+        jButton4.setText("Join Group");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                handleJoinGroup(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
                 jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addContainerGap()));
+                                .addGap(12, 12, 12)
+                                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 176,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(12, 12, 12)));
         jPanel2Layout.setVerticalGroup(
                 jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE,
-                                        javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap()));
 
         jList1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        // jList1.setModel(new Vector<Group>());
         jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 handleClickMenuList(evt);
@@ -125,8 +138,7 @@ public class Dashboard extends javax.swing.JFrame {
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 381,
-                                                Short.MAX_VALUE)
+                                        .addComponent(jScrollPane2)
                                         .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE,
                                                 javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap()));
@@ -145,7 +157,7 @@ public class Dashboard extends javax.swing.JFrame {
                                         javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)));
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
     class Group {
         private String name;
@@ -200,7 +212,21 @@ public class Dashboard extends javax.swing.JFrame {
     }
 
     private void handleClickMenuList(javax.swing.event.ListSelectionEvent evt) {
+        // Group group = jList1.getSelectedValue();
+        // System.out.println("> Join id: " + group.id);
+        // Boolean res = ClientServer.handleJoinGroup(group.id);
+        // if (!res) {
+        // showMessageDialog(null, "Group chat is not found, Please Refresh List");
+        // return;
+        // }
+        // Client.openChat();
+        // Client.closeDashboard();
+    }
+
+    private void handleJoinGroup(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_handleJoinGroup
         Group group = jList1.getSelectedValue();
+        if (group == null)
+            return;
         System.out.println("> Join id: " + group.id);
         Boolean res = ClientServer.handleJoinGroup(group.id);
         if (!res) {

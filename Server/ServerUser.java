@@ -30,6 +30,8 @@ public class ServerUser extends Thread {
 
     public void stopUser() throws IOException {
         shouldRun = false;
+        if (group != null)
+            group.removeUserCon(this);
         is.close();
         // pw.close();
         bw.close();

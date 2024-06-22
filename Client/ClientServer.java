@@ -97,7 +97,7 @@ public class ClientServer implements Runnable {
 
     public static void stopReader() {
         System.out.println("> Stop Incoming Reader");
-        // reader.shouldRun = false;
+        reader.shouldRun = false;
         tReader.interrupt();
     }
 
@@ -125,12 +125,14 @@ public class ClientServer implements Runnable {
     }
 
     private class IncomingReader implements Runnable {
+        boolean shouldRun = true;
+
         @Override
         public void run() {
             try {
                 String message;
-                while ((message = is.readLine()) != null) {
-                    // System.out.println(message);
+                while ((message = is.readLine()) != null && shouldRun) {
+                    System.out.println("msg: " + message);
                     Client.chat.displayMessage(message);
                 }
             } catch (IOException e) {

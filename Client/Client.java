@@ -29,6 +29,7 @@ public class Client {
 
     public static void openDashboard() {
         System.out.println("> Open dashboard");
+        // if (dashboard)
         dashboard.setVisible(true);
         dashboard.pack();
         dashboard.setLocationRelativeTo(null);

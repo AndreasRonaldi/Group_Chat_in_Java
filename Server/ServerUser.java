@@ -87,6 +87,8 @@ public class ServerUser extends Thread {
         Object output = false;
         Object[] arrOutput = null;
 
+        ServerUser suTemp = null;
+
         // System.out.println(Arrays.toString(inputs));
 
         switch (action) {
@@ -141,8 +143,19 @@ public class ServerUser extends Thread {
             case "/kick":
                 if (needLoggedIn())
                     break;
-                // TODO:
-                // group.sendMsgToAll("/chat ");
+                if (!user.username.equals(group.getOwnerName())) {
+                    sendMsg("you can't be doing this");
+                    return;
+                }
+                suTemp = Server.findActiveUser(inputs[1]);
+                output = Server.removeUserFromGroup(suTemp);
+                if (!(Boolean) output) { // user not found
+                    sendMsg("/kick false");
+                    break;
+                }
+                suTemp.sendMsg("/exitgroup kick");
+                sendMsg("/kick true");
+                group.sendMsgToAll("/chat " + "???" + " has been kicked from this room.");
             case "/listuseringroup":
                 if (needLoggedIn())
                     break;
@@ -205,6 +218,6 @@ public class ServerUser extends Thread {
 
     @Override
     public String toString() {
-        return user.username;
+        return user.toString();
     }
 }

@@ -190,8 +190,19 @@ public class Server {
         return true;
     }
 
-    public static void removeUserFromGroup(ServerUser user) {
+    public static ServerUser findActiveUser(String name) {
+        for (ServerUser su : activeUser)
+            if (su.toString().equals(name))
+                return su;
+
+        return null;
+    }
+
+    public static Boolean removeUserFromGroup(ServerUser user) {
+        if (user == null)
+            return false;
         user.group.removeUserCon(user);
         user.setGroup(null);
+        return true;
     }
 }

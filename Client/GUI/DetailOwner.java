@@ -170,7 +170,12 @@ public class DetailOwner extends javax.swing.JFrame {
         }
 
         private void kickBtnActionPerformed(java.awt.event.ActionEvent evt) {
-                // TODO add your handling code here:
+                String user = jList1.getSelectedValue();
+                if (user == null)
+                        return;
+
+                System.out.println("> Kick user: " + user);
+                ClientServer.handleKickUser(user);
         }
 
         public void handleChangeModelList(String users) {

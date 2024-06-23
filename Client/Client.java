@@ -61,6 +61,7 @@ public class Client {
     }
 
     public static void closeChat() {
+        chat.jTextArea1.setText("");
         chat.setVisible(false);
     }
 

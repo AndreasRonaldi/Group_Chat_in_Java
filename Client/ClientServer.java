@@ -71,6 +71,14 @@ public class ClientServer implements Runnable {
         InputToServer("/joingroup " + group.id);
     }
 
+    public static void handleKickUser(String user) {
+        if (user.equals(name)) {
+            createWarningMsg("You can't kick your self.");
+            return;
+        }
+        InputToServer("/kick " + user);
+    }
+
     public static void handleExitGroup() {
         group = null;
         InputToServer("/exitgroup");
@@ -198,8 +206,13 @@ public class ClientServer implements Runnable {
                     createWarningMsg("You are not the owner of the group");
                 }
                 break;
-            case "/kickuser":
-                // TODO:
+            case "/kick":
+                res = inputs[1];
+                if (Boolean.valueOf("" + res)) {
+                    showMessageDialog(null, "User has been kicked!");
+                } else {
+                    createWarningMsg("User is not found.");
+                }
                 break;
             case "/listgroup":
                 Client.dashboard.handleChangeModelList(inputs[1]);

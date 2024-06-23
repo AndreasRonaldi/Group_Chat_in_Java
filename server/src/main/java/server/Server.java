@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.*;
 import java.net.*;
@@ -15,19 +15,27 @@ public class Server {
     static final int PORT = 4444; // port buat mulai server
     static final String ADDRESS = "localhost";
 
-    private static Set<String> usernames = new HashSet<>();
-    private static Set<User> users = new HashSet<>();
+    static final String DB_NAME = "group_chat";
+    static final String DB_USERNAME = "root";
+    static final String DB_PASSWORD = "";
+
+    // private static Set<String> usernames = new HashSet<>();
+    // private static Set<User> users = new HashSet<>();
     private static Set<ServerUser> activeUser = new HashSet<>();
     private static ArrayList<ServerUser> allUsersCon = new ArrayList<>();
-    private static HashMap<Integer, Group> groups = new HashMap<>();
+    private static HashMap<Integer, ArrayList<ServerUser>> groups = new HashMap<>();
 
     static ServerNewCon serverNewCon = null;
+    static ServerSQL serverSQL = null;
 
     public static void main(String[] args) {
         // Create Server Thread then run it
         System.out.println("### Starting Server ###");
         serverNewCon = new ServerNewCon(); // server for accepting new connections
         new Thread(serverNewCon).start();
+
+        serverSQL = new ServerSQL(); // connect to database mysql xampp
+        new Thread(serverSQL).start();
 
         // Get input in server
         try {
@@ -46,7 +54,7 @@ public class Server {
 
     public static void removeUserConnection(ServerUser userCon) throws IOException {
         if (userCon.user != null)
-            System.out.println("> Removed User " + userCon.user.username);
+            System.out.println("> Removed User " + userCon.user);
         userCon.stopUser();
         activeUser.remove(userCon);
         allUsersCon.remove(userCon);
@@ -72,20 +80,21 @@ public class Server {
                     System.out.println("PONG");
                     break;
                 case "LIST USER":
-                    System.out.println(usernames.toString());
+                    // System.out.println(usernames.toString());
+                    ServerSQL.listOfUser();
                     break;
                 case "LIST ACTIVE USER":
                     for (ServerUser Su : activeUser)
                         System.out.println(" " +
-                                Su.user.username + "[" + (Su.group != null ? Su.group.name : "...") + "]");
+                                Su.user + "[" + (Su.group != null ? Su.group : "...") + "]");
                     break;
                 case "LIST GROUP":
-                    System.out.println("[");
-                    for (Integer key : groups.keySet()) {
-                        Group g = groups.get(key);
-                        System.out.println("" + key + ": " + g.name + " " + g.getListOfUsers());
+                    System.out.println(ServerSQL.findAllGroup());
+                    break;
+                case "LIST GROUP USER":
+                    for (ArrayList<ServerUser> asu : groups.values()) {
+                        System.out.println(asu);
                     }
-                    System.out.println("]");
                     break;
                 case "SENDALL":
                     System.out.print("Message?: ");
@@ -116,37 +125,39 @@ public class Server {
 
         allUsersCon.clear();
         serverNewCon.stopServer();
+        serverSQL.stopSQL();
 
         System.out.println("### Server Stopped ###");
+        System.exit(0);
     }
 
-    // Can be implemented in Database
-    public static boolean addNewUser(String username, String password) {
-        if (usernames.contains(username))
+    public static void sendMsgToGroup(Integer groupId, String msg) {
+        for (ServerUser su : groups.get(groupId)) {
+            su.sendMsg(msg);
+        }
+    }
+
+    public static Boolean addNewUser(String username, String password) {
+        if (!ServerSQL.insertUser(username, password))
             return false;
 
         System.out.println("> Create User: " + username);
-        usernames.add(username);
-        User newUser = new User(username, password);
-        users.add(newUser);
         return true;
     }
 
-    public static boolean login(String username, String password, ServerUser userCon) {
-        for (User user : users) {
-            if (user.isItThisUser(username, password)) {
-                System.out.println("> [" + username + "] logged in.");
-                userCon.setUser(user);
-                activeUser.add(userCon);
-                return true;
-            }
+    public static Boolean login(String username, String password, ServerUser userCon) {
+        Boolean res = ServerSQL.findUser(username, password);
+
+        if (res) {
+            System.out.println("> [" + username + "] logged in.");
+            userCon.setUser(username);
+            activeUser.add(userCon);
         }
 
-        System.out.println("> [new]: wrong login");
-        return false;
+        return res;
     }
 
-    public static Boolean createGroup(String name, User user) {
+    public static Boolean createGroup(String name, String user) {
         Pattern p = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(name);
         boolean b = m.find();
@@ -154,39 +165,52 @@ public class Server {
         if (b)
             return false;
 
-        Date date = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+        Boolean res = ServerSQL.createGroup(name, user);
 
-        Integer hashCode = (name + dateFormat.format(date) + user.username).hashCode();
-        Group newGroup = new Group(name, user, hashCode);
-        groups.put(hashCode, newGroup);
+        return res;
+    }
+
+    public static Boolean removeGroup(Integer groupId, String user) {
+        String owner = ServerSQL.findGroupOwner(groupId);
+        if (!owner.equals(user)) {
+            return false;
+        }
+        if (!ServerSQL.removeGroup(groupId)) {
+            return false;
+        }
+        // TODO:
+        sendMsgToGroup(groupId, "/exitgroup remove");
+        // groups.get(groupId).clear();
+        groups.remove(groupId);
+
         return true;
     }
 
-    public static Boolean removeGroup(Integer groupHash, User user) {
-        Group group = groups.get(groupHash);
-        if (group.getOwnerName() == user.username) {
-            group.closeGroup();
-            groups.remove(groupHash);
-            return true;
-        }
-        return false;
-    }
-
-    public static String listOfUserInGroup(Group group) {
-        return group.getListOfUsers();
+    public static String listOfUserInGroup(Integer groupId) {
+        if (!groups.containsKey(groupId))
+            return "[]";
+        return groups.get(groupId).toString();
     }
 
     public static String listOfGroup() {
-        return groups.toString();
+        return ServerSQL.findAllGroup();
     }
 
-    public static Boolean addUserToGroup(ServerUser user, Integer groupHash) {
-        Group group = groups.get(groupHash);
-        if (group == null)
+    public static Boolean addUserToGroup(ServerUser user, Integer groupId) {
+        ArrayList<ServerUser> temp = null;
+
+        if (!ServerSQL.isValidGroup(groupId))
             return false;
-        user.setGroup(group);
-        group.addUserCon(user);
+
+        if (groups.containsKey(groupId)) {
+            groups.get(groupId).add(user);
+        } else {
+            temp = new ArrayList<>();
+            temp.add(user);
+            groups.put(groupId, temp);
+        }
+
+        user.setGroup(groupId);
         return true;
     }
 
@@ -201,7 +225,7 @@ public class Server {
     public static Boolean removeUserFromGroup(ServerUser user) {
         if (user == null)
             return false;
-        user.group.removeUserCon(user);
+        groups.get(user.group).remove(user);
         user.setGroup(null);
         return true;
     }

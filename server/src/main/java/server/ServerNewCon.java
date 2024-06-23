@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -24,7 +24,7 @@ public class ServerNewCon implements Runnable {
         } catch (Exception e) {
             if (shouldRun)
                 System.out.println("ERROR: Something wrong went accept new connection to server");
-            // e.printStackTrace();
+            e.printStackTrace();
         }
     }
 

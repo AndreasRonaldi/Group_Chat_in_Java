@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,8 +9,8 @@ import java.net.Socket;
 
 public class ServerUser extends Thread {
 
-    public User user;
-    public Group group;
+    public String user = null;
+    public Integer group;
 
     private Socket socket;
     private BufferedReader is = null;
@@ -31,7 +31,7 @@ public class ServerUser extends Thread {
     public void stopUser() throws IOException {
         shouldRun = false;
         if (group != null)
-            group.removeUserCon(this);
+            Server.removeUserFromGroup(this);
         is.close();
         // pw.close();
         bw.close();
@@ -59,7 +59,7 @@ public class ServerUser extends Thread {
                     sendMsg("");
                 } else {
                     if (user != null)
-                        System.out.println("> Input [" + this.user.username + "]: " + line);
+                        System.out.println("> Input [" + this.user + "]: " + line);
                     else
                         System.out.println("> Input [new]: " + line);
                     // handle Input
@@ -67,7 +67,7 @@ public class ServerUser extends Thread {
                 }
             } catch (IOException e) {
                 if (user != null)
-                    System.out.println("> Disconnected: " + this.user.username);
+                    System.out.println("> Disconnected: " + this.user);
                 else
                     System.out.println("> Disconnected: new guy");
 
@@ -130,20 +130,22 @@ public class ServerUser extends Thread {
                     break;
                 }
                 sendMsg("/joingroup " + output);
-                group.sendMsgToAll("/chat " + user.username + " has join room.");
+                // TODO:
+                Server.sendMsgToGroup(group, "/chat " + user + " has join room.");
                 break;
             case "/exitgroup":
                 if (needLoggedIn())
                     break;
-                group.sendMsgToAll("/chat " + user.username + " exit room.");
-                group.removeUserCon(this);
-                group = null;
+                Server.sendMsgToGroup(group, "/chat " + user + " exit room.");
+                // TODO:
+                Server.removeUserFromGroup(this);
                 sendMsg("/exitgroup exit");
                 break;
             case "/kick":
+                // TODO:
                 if (needLoggedIn())
                     break;
-                if (!user.username.equals(group.getOwnerName())) {
+                if (!user.equals(ServerSQL.findGroupOwner(group))) {
                     sendMsg("you can't be doing this");
                     return;
                 }
@@ -155,7 +157,7 @@ public class ServerUser extends Thread {
                 }
                 suTemp.sendMsg("/exitgroup kick");
                 sendMsg("/kick true");
-                group.sendMsgToAll("/chat " + "???" + " has been kicked from this room.");
+                Server.sendMsgToGroup(group, "/chat " + "???" + " has been kicked from this room.");
             case "/listuseringroup":
                 if (needLoggedIn())
                     break;
@@ -170,7 +172,7 @@ public class ServerUser extends Thread {
                     break;
                 }
                 String temp[] = input.split(" ", 2);
-                group.sendMsgToAll("/chat " + user.username + ": " + temp[1]);
+                Server.sendMsgToGroup(group, "/chat " + user + ": " + temp[1]);
                 break;
             case "/logout":
             case "/exit":
@@ -204,16 +206,16 @@ public class ServerUser extends Thread {
             bw.newLine();
             bw.flush();
         } catch (IOException e) {
-            System.out.println("ERROR: Sending to " + user.username);
+            System.out.println("ERROR: Sending to " + user);
         }
     }
 
-    public void setGroup(Group group) {
-        this.group = group;
+    public void setGroup(Integer groupId) {
+        this.group = groupId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUser(String username) {
+        this.user = username;
     }
 
     @Override

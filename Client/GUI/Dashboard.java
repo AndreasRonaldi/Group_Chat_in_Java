@@ -1,17 +1,10 @@
 package Client.GUI;
 
-import java.util.Vector;
-
 import javax.swing.DefaultListModel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
-
-import static javax.swing.JOptionPane.showMessageDialog;
 
 import Client.ClientServer;
 import Client.Group;
-import Client.Client;
 
 public class Dashboard extends javax.swing.JFrame {
 

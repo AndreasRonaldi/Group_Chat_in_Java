@@ -85,7 +85,7 @@ public class ServerUser extends Thread {
         String action = inputs[0];
 
         Object output = false;
-        Object[] arrOutput = null;
+        // Object[] arrOutput = null;
 
         ServerUser suTemp = null;
 

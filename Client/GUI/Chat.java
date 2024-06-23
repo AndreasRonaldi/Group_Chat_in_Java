@@ -1,8 +1,5 @@
 package Client.GUI;
 
-import java.awt.Graphics;
-
-import Client.Client;
 import Client.ClientServer;
 
 public class Chat extends javax.swing.JFrame {

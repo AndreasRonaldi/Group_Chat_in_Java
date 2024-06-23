@@ -170,7 +170,7 @@ public class ClientServer implements Runnable {
         String action = inputs[0];
 
         Object res;
-        Object[] arrRes;
+        // Object[] arrRes;
 
         Boolean bolres;
 

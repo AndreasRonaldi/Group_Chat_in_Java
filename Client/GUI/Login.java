@@ -3,9 +3,6 @@ package Client.GUI;
 import Client.Client;
 import Client.ClientServer;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import static javax.swing.JOptionPane.showMessageDialog;
 
 public class Login extends JFrame {
 

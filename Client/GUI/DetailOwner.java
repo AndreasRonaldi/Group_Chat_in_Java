@@ -7,7 +7,6 @@ import javax.swing.DefaultListModel;
 
 import Client.Client;
 import Client.ClientServer;
-import Client.Group;
 
 public class DetailOwner extends javax.swing.JFrame {
         public DetailOwner() {

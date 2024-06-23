@@ -1,13 +1,7 @@
 package Client.GUI;
 
-import static javax.swing.JOptionPane.showMessageDialog;
-import javax.swing.*;
-
 import Client.Client;
 import Client.ClientServer;
-
-import java.awt.*;
-import java.awt.event.*;
 
 public class Signup extends javax.swing.JFrame {
 

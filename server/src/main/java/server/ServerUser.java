@@ -130,7 +130,6 @@ public class ServerUser extends Thread {
                     break;
                 }
                 sendMsg("/joingroup " + output);
-                // TODO:
                 Server.sendMsgToGroup(group, "/chat " + user + " has join room.");
                 break;
             case "/exitgroup":
@@ -157,7 +156,7 @@ public class ServerUser extends Thread {
                 }
                 suTemp.sendMsg("/exitgroup kick");
                 sendMsg("/kick true");
-                Server.sendMsgToGroup(group, "/chat " + "???" + " has been kicked from this room.");
+                Server.sendMsgToGroup(group, "/chat " + inputs[1] + " has been kicked from this room.");
             case "/listuseringroup":
                 if (needLoggedIn())
                     break;
